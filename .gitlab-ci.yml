@@ -1,0 +1,43 @@
+image: node:20
+
+stages:
+  - build
+  - deploy
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - .pnpm-store
+
+before_script:
+  - npm install -g corepack@latest && corepack enable
+  - pnpm install
+
+build:
+  stage: build
+  script:
+    - pnpm run build
+  artifacts:
+    paths:
+      - public
+    expire_in: 1 week
+
+deploy:
+  stage: deploy
+  script:
+    - mv public public_html  # Required for GitLab Pages
+  artifacts:
+    paths:
+      - public_html
+  only:
+    - main  # Change to your deployment branch if needed
+
+pages:
+  stage: deploy
+  script:
+    - mv public public_html
+  artifacts:
+    paths:
+      - public_html
+  only:
+    - main
